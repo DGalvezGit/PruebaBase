@@ -1,0 +1,10 @@
+BaseDeDatos.sln
+BaseDeDatos/App.config
+BaseDeDatos/BaseDeDatos.csproj
+BaseDeDatos/Properties/Resources.resx
+BaseDeDatos/Properties/Settings.settings
+.vs/
+BaseDeDatos/bin/
+BaseDeDatos/obj/
+BaseDeDatos/Properties/
+
