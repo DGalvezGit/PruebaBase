@@ -39,8 +39,10 @@
             this.chbBaja = new System.Windows.Forms.CheckBox();
             this.chbConsulta = new System.Windows.Forms.CheckBox();
             this.chbMod = new System.Windows.Forms.CheckBox();
-            this.dtpVig = new System.Windows.Forms.DateTimePicker();
-            this.lVigencia = new System.Windows.Forms.Label();
+            this.dtpVigIni = new System.Windows.Forms.DateTimePicker();
+            this.lVigIni = new System.Windows.Forms.Label();
+            this.lVigFinal = new System.Windows.Forms.Label();
+            this.dtpVigFin = new System.Windows.Forms.DateTimePicker();
             this.SuspendLayout();
             // 
             // lNombre
@@ -149,21 +151,37 @@
             this.chbMod.Text = "Modificación";
             this.chbMod.UseVisualStyleBackColor = true;
             // 
-            // dtpVig
+            // dtpVigIni
             // 
-            this.dtpVig.Location = new System.Drawing.Point(221, 54);
-            this.dtpVig.Name = "dtpVig";
-            this.dtpVig.Size = new System.Drawing.Size(136, 20);
-            this.dtpVig.TabIndex = 2;
+            this.dtpVigIni.Location = new System.Drawing.Point(218, 34);
+            this.dtpVigIni.Name = "dtpVigIni";
+            this.dtpVigIni.Size = new System.Drawing.Size(136, 20);
+            this.dtpVigIni.TabIndex = 2;
             // 
-            // lVigencia
+            // lVigIni
             // 
-            this.lVigencia.AutoSize = true;
-            this.lVigencia.Location = new System.Drawing.Point(221, 35);
-            this.lVigencia.Name = "lVigencia";
-            this.lVigencia.Size = new System.Drawing.Size(51, 13);
-            this.lVigencia.TabIndex = 13;
-            this.lVigencia.Text = "Vigencia:";
+            this.lVigIni.AutoSize = true;
+            this.lVigIni.Location = new System.Drawing.Point(218, 15);
+            this.lVigIni.Name = "lVigIni";
+            this.lVigIni.Size = new System.Drawing.Size(81, 13);
+            this.lVigIni.TabIndex = 13;
+            this.lVigIni.Text = "Vigencia Inicial:";
+            // 
+            // lVigFinal
+            // 
+            this.lVigFinal.AutoSize = true;
+            this.lVigFinal.Location = new System.Drawing.Point(218, 60);
+            this.lVigFinal.Name = "lVigFinal";
+            this.lVigFinal.Size = new System.Drawing.Size(76, 13);
+            this.lVigFinal.TabIndex = 15;
+            this.lVigFinal.Text = "Vigencia Final:";
+            // 
+            // dtpVigFin
+            // 
+            this.dtpVigFin.Location = new System.Drawing.Point(218, 79);
+            this.dtpVigFin.Name = "dtpVigFin";
+            this.dtpVigFin.Size = new System.Drawing.Size(136, 20);
+            this.dtpVigFin.TabIndex = 14;
             // 
             // dUser
             // 
@@ -172,8 +190,10 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.btnCancelar;
             this.ClientSize = new System.Drawing.Size(369, 190);
-            this.Controls.Add(this.lVigencia);
-            this.Controls.Add(this.dtpVig);
+            this.Controls.Add(this.lVigFinal);
+            this.Controls.Add(this.dtpVigFin);
+            this.Controls.Add(this.lVigIni);
+            this.Controls.Add(this.dtpVigIni);
             this.Controls.Add(this.chbMod);
             this.Controls.Add(this.chbConsulta);
             this.Controls.Add(this.chbBaja);
@@ -189,7 +209,6 @@
             this.MinimizeBox = false;
             this.Name = "dUser";
             this.Text = "Agrega Usuario";
-            this.Load += new System.EventHandler(this.dUser_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -208,8 +227,10 @@
         private System.Windows.Forms.CheckBox chbBaja;
         private System.Windows.Forms.CheckBox chbConsulta;
         private System.Windows.Forms.CheckBox chbMod;
-        private System.Windows.Forms.DateTimePicker dtpVig;
-        private System.Windows.Forms.Label lVigencia;
+        private System.Windows.Forms.DateTimePicker dtpVigIni;
+        private System.Windows.Forms.Label lVigIni;
+        private System.Windows.Forms.Label lVigFinal;
+        private System.Windows.Forms.DateTimePicker dtpVigFin;
     }
 
 }

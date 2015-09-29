@@ -17,9 +17,10 @@ namespace BaseDeDatos
         public bool agregaEntidades(List<Entidad> listEnt)
         {
             bool band = false;
+            
             if (listEnt != null)
             {
-                foreach(Entidad ent in listEnt)
+                foreach (Entidad ent in listEnt)
                 {
                     band = base.altaEntidad(ent);
                     if (band)
@@ -31,6 +32,7 @@ namespace BaseDeDatos
                     }
                 }
             }
+            
 
             return band;
         }

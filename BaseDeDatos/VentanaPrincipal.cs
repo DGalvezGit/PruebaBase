@@ -21,6 +21,10 @@ namespace BaseDeDatos
         private uint espacioEntreControles;
         private Organizacion org;
         ToolStripStatusLabel labelComment;
+        public bool orgAbierta
+        {
+            get { return this.org != null ? true : false; }
+        }
         
 
         public VentanaPrincipal()
@@ -116,30 +120,42 @@ namespace BaseDeDatos
                 if (creaEst.DialogResult == DialogResult.OK)
                 {
                     us = creaEst.usuario();
-                    this.abreCreaOrganizacion('s', creaEst.nombreDB(), creaEst.usuario(), creaEst.entidades());
-                    this.org.altaUsuario(us);
+                    this.abreOrganizacion('s', creaEst.nombreDB(), creaEst.usuario(), creaEst.entidades(),true);
                     
                 }
                 creaEst.Close();
             }
         }
 
-        private void abreCreaOrganizacion(char tipo,string nombre,Usuario us,List<Entidad>listEnt)
+        /// <summary>
+        /// Método que abre una organización 
+        /// </summary>
+        /// <param name="tipo">Tipo de organización</param>
+        /// <param name="nombre">Nombre de la base de datos</param>
+        /// <param name="us">Log in de usuario</param>
+        /// <param name="listEnt">Lista de entidades a insertar si se creó una nueva organizacion</param>
+        /// <param name="nueva">variable booleana para indicar si la organización es nueva,si es true crea un usuario,de lo contrario 
+        /// inicia con uno previamente validado</param>
+        private void abreOrganizacion(char tipo,string nombre,Usuario us,List<Entidad>listEnt,bool nueva)
         {
             
             switch (tipo)
             {
                 case 's':
                 case 'S':
-                    this.org = new Secuencial(nombre+".scl",us);
-                    this.controlDatos.actualizaUsuario(us.nombre);
+                    this.org = new Secuencial(nombre + ".scl", us);
+                    if (nueva)
+                    {
+                        this.org.altaUsuario(us);   
+                    }
+                    
                     if (this.org != null)
                     {
                         if (listEnt != null)
                         {
                             ((Secuencial)this.org).agregaEntidades(listEnt);
                         }
-                        this.controlEnt.agregaEntidades(this.org.entidades());
+                        
                     }
                 break;
                 case 'm':
@@ -147,10 +163,16 @@ namespace BaseDeDatos
 
                 break;
             }
+            this.controlDatos.actualizaUsuario(us.nombre);
+            this.controlEnt.agregaEntidades(this.org.entidades());
             this.controlArch.RefreshArch();
         }
 
-
+        /// <summary>
+        /// Método que se llama cuando se va abrir una organización ya existente
+        /// </summary>
+        /// <param name="tipo">tipo de la organización a abrir</param>
+        /// <param name="nombre"> nombre de la organización a abrir</param>
         public void abreOrganizacion(string tipo, string nombre)
         {
             Usuario aUsr;
@@ -161,7 +183,14 @@ namespace BaseDeDatos
                 aUsr = this.pideUsuario(Archivo.path+'\\'+tipo+'\\'+nombre+".usr");
                 if (aUsr != null)
                 {
-                    this.abreCreaOrganizacion(tipo[0], nombre, aUsr, null);
+                    if (aUsr.vigFin.CompareTo(DateTime.Now) > 0)
+                    {
+                        this.abreOrganizacion(tipo[0], nombre, aUsr, null, false);
+                    }
+                    else
+                    {
+                        MessageBox.Show("El usuario no está vigente");
+                    }
                 }
             }
         }
@@ -178,7 +207,7 @@ namespace BaseDeDatos
 
             if (this.org != null)
             {
-                if (this.org.nombre != orgAbrir)
+                if (this.org.nombre .Remove(this.org.nombre.Length-4)!= orgAbrir)
                 {
                     if (MessageBox.Show("¿Seguro que quieres cerrar esta organización?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
@@ -248,6 +277,7 @@ namespace BaseDeDatos
             dUser dUsr = new dUser();
 
             dUsr.visualizaControles(false);
+            dUsr.Text = "Sign In";
             while (!band)
             {
                 dUsr.ShowDialog();
@@ -290,7 +320,16 @@ namespace BaseDeDatos
 
             return us;
         }
-        
+
+        public void agregaUsuario(Usuario us)
+        {
+            if (this.org != null)
+            {
+                this.org.altaUsuario(us);
+            }
+        }
+
+
 
 
 

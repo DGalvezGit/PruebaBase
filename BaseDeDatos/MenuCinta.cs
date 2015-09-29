@@ -33,7 +33,7 @@ namespace BaseDeDatos
             #region
             subItems = new ToolStripMenuItem[]{ new ToolStripMenuItem("Crear", null, crearEstructura_Click) ,
                                                                      new ToolStripMenuItem("Consultar", null, consultaEstructura_Click),
-                                                                     new ToolStripMenuItem("Agregar Usuarios", null, crearEstructura_Click),
+                                                                     new ToolStripMenuItem("Agregar Usuarios", null, AgregaUsuarios_Click),
                                                                      new ToolStripMenuItem("Crear Afirmador",null,crearEstructura_Click),
                                                                      new ToolStripMenuItem("Crear Disparador",null,crearEstructura_Click)
                                                                     };
@@ -78,6 +78,28 @@ namespace BaseDeDatos
         void crearEstructura_Click(object sender, EventArgs e)
         {
             this.ventanaPrinc.creaEstructura();
+        }
+
+        void AgregaUsuarios_Click(object sender, EventArgs e)
+        {
+            Usuario us = null;
+            dUser dUsr;
+
+            if (this.ventanaPrinc.orgAbierta)
+            {
+                dUsr = new dUser();
+                dUsr.privilegios(true);
+                dUsr.ShowDialog();
+                if (dUsr.DialogResult == DialogResult.OK)
+                {
+                    if (!dUsr.nombre.Equals("") && !dUsr.contraseña.Equals(""))
+                    {
+                        us = new Usuario(dUsr.nombre, dUsr.contraseña, dUsr.priv, dUsr.vigIni, dUsr.vigFin);
+                        this.ventanaPrinc.agregaUsuario(us);
+                    }
+                }
+                dUsr.Dispose();
+            }
         }
 
         void consultaEstructura_Click(object sender,EventArgs e)

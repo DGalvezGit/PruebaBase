@@ -33,7 +33,7 @@ namespace BaseDeDatos
             this.Nombre = nombre;
             this.Tipo = tipo;
             this.inicializa();
-            
+            this.Us = us;
         }
 
         private void inicializa()
@@ -127,6 +127,7 @@ namespace BaseDeDatos
             pos = Archivo.dameCab(this.ruta);
             if (pos != -1)
             {
+                aEnt = this.leeEntidad(pos);
                 while (aEnt.nombre != nomEnt && pos != -1)
                 {
                     pos = aEnt.sigEnt;
@@ -135,7 +136,6 @@ namespace BaseDeDatos
                         aEnt = this.leeEntidad(pos);
                     }
                 }
-
             }
 
             return pos;

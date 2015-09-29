@@ -15,7 +15,8 @@ namespace BaseDeDatos
         public string nombre;
         public string contraseña;
         public bool[] priv;
-        public string vig;
+        public DateTime vigIni;
+        public DateTime vigFin;
 
 
         public dUser()
@@ -44,8 +45,10 @@ namespace BaseDeDatos
             chbAlta.Visible = band;
             chbBaja.Visible = band;
             chbMod.Visible = band;
-            dtpVig.Visible = band;
-            lVigencia.Visible = band;
+            dtpVigIni.Visible = band;
+            dtpVigFin.Visible = band;
+            lVigIni.Visible = band;
+            lVigFinal.Visible = band;
             btnCancelar.Enabled = !band;
 
         }
@@ -57,16 +60,10 @@ namespace BaseDeDatos
             this.priv[1] = chbAlta.Checked;
             this.priv[2] = chbBaja.Checked;
             this.priv[3] = chbMod.Checked;
-            vig = dtpVig.Value.Date.ToString();
+            vigIni = dtpVigIni.Value.Date;
+            vigFin = dtpVigFin.Value.Date;
             this.DialogResult = DialogResult.OK;
         }
-
-        private void dUser_Load(object sender, EventArgs e)
-        {
-
-        }
-
-
     }
 
 }

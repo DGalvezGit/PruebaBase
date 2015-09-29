@@ -43,6 +43,7 @@ namespace BaseDeDatos
         public void agregaEntidades(List<Entidad>listEnt)
         {
             ((ListBox)base.controlPrincipal).Items.Clear();
+            
             foreach (Entidad ent in listEnt)
             {
                 ((ListBox)base.controlPrincipal).Items.Add(ent.nombre);
