@@ -21,8 +21,24 @@ namespace BaseDeDatos
         private bool[] Permisos;
         public bool []permisos
         {
-            get { return Permisos; }
+            get { return this.Permisos; }
             set { this.Permisos = value; }
+        }
+        public bool alta
+        {
+            get { return this.Permisos[0]; }
+        }
+        public bool baja
+        {
+            get { return this.Permisos[1]; }
+        }
+        public bool consulta
+        {
+            get { return this.Permisos[2]; }
+        }
+        public bool modificacion
+        {
+            get { return this.Permisos[3]; }
         }
         private DateTime VigIni;
         public DateTime vigIni

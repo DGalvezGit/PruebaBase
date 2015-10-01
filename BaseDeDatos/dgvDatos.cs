@@ -7,7 +7,7 @@ using System.Windows.Forms;
 
 namespace BaseDeDatos
 {
-    class dgvDatos : Controles
+    public class dgvDatos : Controles
     {
 
         public dgvDatos(Form f):base()

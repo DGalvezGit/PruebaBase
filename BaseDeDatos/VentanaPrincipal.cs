@@ -16,14 +16,22 @@ namespace BaseDeDatos
         private MenuCinta menu; //Clase que contiene la cinta menu que se encuentra en la parte superior de la ventana
         private LvEnt controlEnt;  //Clase que administra el label y el control DataGrid que visualiza las entidades
         private DgvAtr controlAtr;  //Clase que administra el label y el control DataGrid que visualiza los atributos
-        private dgvDatos controlDatos;
+        private dgvDatos ControlDatos;
+        public dgvDatos controlDatos
+        {
+            get { return this.ControlDatos; }
+        }
         private uint sangriaIzq;
         private uint espacioEntreControles;
-        private Organizacion org;
+        private Organizacion Org;
+        public Organizacion org
+        {
+            get { return this.Org; }
+        }
         ToolStripStatusLabel labelComment;
         public bool orgAbierta
         {
-            get { return this.org != null ? true : false; }
+            get { return this.Org != null ? true : false; }
         }
         
 
@@ -35,8 +43,8 @@ namespace BaseDeDatos
             this.menu = new MenuCinta(this);
             this.controlEnt = new LvEnt(this);
             this.controlAtr = new DgvAtr(this);
-            this.controlDatos = new dgvDatos(this);
-            this.org = null;
+            this.ControlDatos = new dgvDatos(this);
+            this.Org = null;
             this.labelComment = new ToolStripStatusLabel();
 
             InitializeComponent();
@@ -73,8 +81,8 @@ namespace BaseDeDatos
                                                     tamañoForma.Y * this.controlEnt.TamañoPorcentaje().Y / 100);
             this.controlAtr.tamControl = new Point(tamañoForma.X * this.controlAtr.TamañoPorcentaje().X / 100,
                                                     tamañoForma.Y * this.controlAtr.TamañoPorcentaje().Y / 100);
-            this.controlDatos.tamControl = new Point(tamañoForma.X * this.controlDatos.TamañoPorcentaje().X / 100,
-                                                    tamañoForma.Y * this.controlDatos.TamañoPorcentaje().Y / 100);
+            this.ControlDatos.tamControl = new Point(tamañoForma.X * this.ControlDatos.TamañoPorcentaje().X / 100,
+                                                    tamañoForma.Y * this.ControlDatos.TamañoPorcentaje().Y / 100);
             this.actualizaUbicacionControles();
 
         }
@@ -94,7 +102,7 @@ namespace BaseDeDatos
             {
                 mayor = this.controlArch.coordenadas.Width;
             }
-            this.controlDatos.ubicacion(mayor+(int)this.espacioEntreControles, this.menu.Height + (int)this.espacioEntreControles*3);
+            this.ControlDatos.ubicacion(mayor+(int)this.espacioEntreControles, this.menu.Height + (int)this.espacioEntreControles*3);
             
         }
 
@@ -143,17 +151,17 @@ namespace BaseDeDatos
             {
                 case 's':
                 case 'S':
-                    this.org = new Secuencial(nombre + ".scl", us);
+                    this.Org = new Secuencial(nombre + ".scl", us);
                     if (nueva)
                     {
-                        this.org.altaUsuario(us);   
+                        this.Org.altaUsuario(us);   
                     }
                     
-                    if (this.org != null)
+                    if (this.Org != null)
                     {
                         if (listEnt != null)
                         {
-                            ((Secuencial)this.org).agregaEntidades(listEnt);
+                            ((Secuencial)this.Org).agregaEntidades(listEnt);
                         }
                         
                     }
@@ -163,10 +171,25 @@ namespace BaseDeDatos
 
                 break;
             }
-            this.controlDatos.actualizaUsuario(us.nombre);
-            this.controlEnt.agregaEntidades(this.org.entidades());
+            this.actualizaControles(us);
+        }
+
+        public void actualizaControles(Usuario us)
+        {
+            this.ControlDatos.actualizaUsuario(us.nombre);
+            if (us.consulta)
+            {
+                this.controlEnt.agregaEntidades(this.Org.entidades());
+            }
+            else
+            {
+                this.controlEnt.limpiaControl();
+                this.controlDatos.limpiaControl();
+                this.controlAtr.limpiaControl();
+            }
             this.controlArch.RefreshArch();
         }
+        
 
         /// <summary>
         /// Método que se llama cuando se va abrir una organización ya existente
@@ -178,7 +201,7 @@ namespace BaseDeDatos
             Usuario aUsr;
 
             this.verificaOrgAbierta(nombre);
-            if (this.org == null)
+            if (this.Org == null)
             {
                 aUsr = this.pideUsuario(Archivo.path+'\\'+tipo+'\\'+nombre+".usr");
                 if (aUsr != null)
@@ -205,16 +228,17 @@ namespace BaseDeDatos
         {
             bool band = false;
 
-            if (this.org != null)
+            if (this.Org != null)
             {
-                if (this.org.nombre .Remove(this.org.nombre.Length-4)!= orgAbrir)
+                if (this.Org.nombre .Remove(this.Org.nombre.Length-4)!= orgAbrir)
                 {
                     if (MessageBox.Show("¿Seguro que quieres cerrar esta organización?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
                     {
-                        this.org = null;
+                        this.Org = null;
                         this.controlEnt.limpiaControl();
                         this.controlAtr.limpiaControl();
-                        this.controlDatos.limpiaControl();
+                        this.ControlDatos.limpiaControl();
+                        this.ControlDatos.actualizaUsuario("");
                         band = true;
                     }
                 }
@@ -234,9 +258,9 @@ namespace BaseDeDatos
         {
             List<Atributo> listAtr;
 
-            listAtr = this.org.listaAtributos(nomEnt);
+            listAtr = this.Org.listaAtributos(nomEnt);
             this.controlAtr.agregaAtributos(listAtr);
-            this.controlDatos.agregaColumnas(listAtr);
+            this.ControlDatos.agregaColumnas(listAtr);
         }
 
         public string entidadSeleccionada()
@@ -249,8 +273,8 @@ namespace BaseDeDatos
             Entidad ent;
             Atributo atr;
 
-            ent = this.org.buscaEntidad(this.entidadSeleccionada());
-            atr = this.org.buscaAtributo(ent, nomAtr);
+            ent = this.Org.buscaEntidad(this.entidadSeleccionada());
+            atr = this.Org.buscaAtributo(ent, nomAtr);
             this.labelComment.Text = atr.comentario;
         }
 
@@ -259,10 +283,10 @@ namespace BaseDeDatos
             bool band;
 
             string nomEnt = this.entidadSeleccionada();
-            band = this.org.cambiaClaveAtributo(nomEnt,nomAtr,claveNueva);
+            band = this.Org.cambiaClaveAtributo(nomEnt,nomAtr,claveNueva);
             if (band)
             {
-                this.controlAtr.agregaAtributos(this.org.listaAtributos(nomEnt));
+                this.controlAtr.agregaAtributos(this.Org.listaAtributos(nomEnt));
             }
             else
             {
@@ -270,7 +294,7 @@ namespace BaseDeDatos
             }
         }
 
-        private Usuario pideUsuario(string path)
+        public Usuario pideUsuario(string path)
         {
             bool band = false;
             Usuario us = null;
@@ -320,16 +344,8 @@ namespace BaseDeDatos
 
             return us;
         }
-
-        public void agregaUsuario(Usuario us)
-        {
-            if (this.org != null)
-            {
-                this.org.altaUsuario(us);
-            }
-        }
-
-
+        
+        
 
 
 

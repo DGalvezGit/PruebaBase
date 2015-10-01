@@ -11,7 +11,7 @@ namespace BaseDeDatos
     /// <summary>
     /// Clase que contiene un label y un control para encapsularlos y manejarlos como un solo control para facilitar el entendimiento del código
     /// </summary>
-    class Controles
+    public class Controles
     {
         protected Label label;
         protected Control controlPrincipal;

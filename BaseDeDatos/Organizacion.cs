@@ -54,6 +54,11 @@ namespace BaseDeDatos
             return band;
         }
 
+        public void cambiaUsuario(Usuario usr)
+        {
+            this.Us = usr;
+        }
+
         #region ----------------------------------------ENTIDADES--------------------------------
 
         /// <summary>

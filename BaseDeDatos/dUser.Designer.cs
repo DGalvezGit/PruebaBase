@@ -116,9 +116,9 @@
             this.chbAlta.AutoSize = true;
             this.chbAlta.Location = new System.Drawing.Point(119, 111);
             this.chbAlta.Name = "chbAlta";
-            this.chbAlta.Size = new System.Drawing.Size(44, 17);
+            this.chbAlta.Size = new System.Drawing.Size(47, 17);
             this.chbAlta.TabIndex = 4;
-            this.chbAlta.Text = "Alta";
+            this.chbAlta.Text = "Baja";
             this.chbAlta.UseVisualStyleBackColor = true;
             // 
             // chbBaja
@@ -126,9 +126,9 @@
             this.chbBaja.AutoSize = true;
             this.chbBaja.Location = new System.Drawing.Point(185, 111);
             this.chbBaja.Name = "chbBaja";
-            this.chbBaja.Size = new System.Drawing.Size(47, 17);
+            this.chbBaja.Size = new System.Drawing.Size(86, 17);
             this.chbBaja.TabIndex = 5;
-            this.chbBaja.Text = "Baja";
+            this.chbBaja.Text = "Modificación";
             this.chbBaja.UseVisualStyleBackColor = true;
             // 
             // chbConsulta
@@ -136,19 +136,19 @@
             this.chbConsulta.AutoSize = true;
             this.chbConsulta.Location = new System.Drawing.Point(35, 111);
             this.chbConsulta.Name = "chbConsulta";
-            this.chbConsulta.Size = new System.Drawing.Size(67, 17);
+            this.chbConsulta.Size = new System.Drawing.Size(44, 17);
             this.chbConsulta.TabIndex = 3;
-            this.chbConsulta.Text = "Consulta";
+            this.chbConsulta.Text = "Alta";
             this.chbConsulta.UseVisualStyleBackColor = true;
             // 
             // chbMod
             // 
             this.chbMod.AutoSize = true;
-            this.chbMod.Location = new System.Drawing.Point(247, 111);
+            this.chbMod.Location = new System.Drawing.Point(268, 111);
             this.chbMod.Name = "chbMod";
-            this.chbMod.Size = new System.Drawing.Size(86, 17);
+            this.chbMod.Size = new System.Drawing.Size(67, 17);
             this.chbMod.TabIndex = 6;
-            this.chbMod.Text = "Modificación";
+            this.chbMod.Text = "Consulta";
             this.chbMod.UseVisualStyleBackColor = true;
             // 
             // dtpVigIni

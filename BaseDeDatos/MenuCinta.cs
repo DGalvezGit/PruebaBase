@@ -28,15 +28,20 @@ namespace BaseDeDatos
         private void agregaMenu()
         {
             ToolStripMenuItem[] subItems;
+            ToolStripMenuItem usr = new ToolStripMenuItem("Usuarios");
+            usr.DropDownItems.AddRange(new ToolStripMenuItem[] { new ToolStripMenuItem("Alta",null,agregaUsuarios_Click),
+                                                                 new ToolStripMenuItem("Cambia usuario",null,cambiaUsr_Click)
+                                                               }
+                                      );
 
             // Create a MenuStrip control with a Estructuras subItems.
             #region
             subItems = new ToolStripMenuItem[]{ new ToolStripMenuItem("Crear", null, crearEstructura_Click) ,
-                                                                     new ToolStripMenuItem("Consultar", null, consultaEstructura_Click),
-                                                                     new ToolStripMenuItem("Agregar Usuarios", null, AgregaUsuarios_Click),
+                                                                     usr,
                                                                      new ToolStripMenuItem("Crear Afirmador",null,crearEstructura_Click),
                                                                      new ToolStripMenuItem("Crear Disparador",null,crearEstructura_Click)
                                                                     };
+            
             ToolStripMenuItem estructurasMenu = new ToolStripMenuItem("Estructuras", null, subItems);
             #endregion
             // Create a MenuStrip control with a Mantenimiento subItems.
@@ -53,6 +58,7 @@ namespace BaseDeDatos
             subItems = new ToolStripMenuItem[]{ new ToolStripMenuItem("Sin novedades")};
 
             ToolStripMenuItem sqlMenu = new ToolStripMenuItem("SQL",null,subItems);
+            
             #endregion
             
             ((ToolStripDropDownMenu)(estructurasMenu.DropDown)).ShowImageMargin = false;
@@ -80,7 +86,23 @@ namespace BaseDeDatos
             this.ventanaPrinc.creaEstructura();
         }
 
-        void AgregaUsuarios_Click(object sender, EventArgs e)
+        void cambiaUsr_Click(object sender, EventArgs e)
+        {
+            string ruta = this.ventanaPrinc.org.ruta.Remove(this.ventanaPrinc.org.ruta.Length - 4) + ".usr";
+            Usuario usr;
+
+            if(this.ventanaPrinc.orgAbierta)
+            {
+                usr = this.ventanaPrinc.pideUsuario(ruta);
+                if (usr != null)
+                {
+                    this.ventanaPrinc.org.cambiaUsuario(usr);
+                    this.ventanaPrinc.actualizaControles(usr);
+                }
+            }
+        }
+
+        void agregaUsuarios_Click(object sender, EventArgs e)
         {
             Usuario us = null;
             dUser dUsr;
@@ -95,7 +117,10 @@ namespace BaseDeDatos
                     if (!dUsr.nombre.Equals("") && !dUsr.contraseña.Equals(""))
                     {
                         us = new Usuario(dUsr.nombre, dUsr.contraseña, dUsr.priv, dUsr.vigIni, dUsr.vigFin);
-                        this.ventanaPrinc.agregaUsuario(us);
+                        if (this.ventanaPrinc.orgAbierta)
+                        {
+                            this.ventanaPrinc.org.altaUsuario(us);
+                        }
                     }
                 }
                 dUsr.Dispose();
