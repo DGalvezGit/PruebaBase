@@ -11,6 +11,10 @@ namespace BaseDeDatos
         public const char KP = 'P';
         public const char KF = 'F';
         public const char None = 'N';
+        public const string entero = "int";
+        public const string flotante = "float";
+        public const string caracter = "char";
+        public const string cadena = "string";
         private string Nombre;
         public string nombre
         {

@@ -533,7 +533,7 @@ namespace BaseDeDatos
 
                 columnType.HeaderText = "Tipo";
                 columnType.Name = "ColumnType";
-                columnType.Items.AddRange(new string[] { "int", "string","float","char" });
+                columnType.Items.AddRange(new string[] { Atributo.entero, Atributo.flotante,Atributo.caracter,Atributo.cadena });
                 columnType.Width = 50;
                 columnType.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
                 columnType.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;
