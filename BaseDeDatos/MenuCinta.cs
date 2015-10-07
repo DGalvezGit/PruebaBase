@@ -96,10 +96,15 @@ namespace BaseDeDatos
                 usr = this.ventanaPrinc.pideUsuario(ruta);
                 if (usr != null)
                 {
-                    this.ventanaPrinc.org.cambiaUsuario(usr);
-                    this.ventanaPrinc.actualizaControles(usr);
+                    if (this.ventanaPrinc.verificaUsuario(usr))
+                    {
+                        this.ventanaPrinc.org.cambiaUsuario(usr);
+                        this.ventanaPrinc.actualizaControles(usr);
+                    }
                 }
             }
+            
+            
         }
 
         void agregaUsuarios_Click(object sender, EventArgs e)

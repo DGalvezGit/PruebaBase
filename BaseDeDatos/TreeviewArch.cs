@@ -77,10 +77,60 @@ namespace BaseDeDatos
 
             if (node.Text != "Multilistas" && node.Text != "Secuencial")
             {
-                this.papi.abreOrganizacion(node.Parent.Text, node.Text.Remove(node.Text.Length - 4));
+                this.abreOrganizacion(node.Parent.Text, node.Text.Remove(node.Text.Length - 4));
             }
         }
 
+        /// <summary>
+        /// Método que se llama cuando se va abrir una organización ya existente
+        /// </summary>
+        /// <param name="tipo">tipo de la organización a abrir</param>
+        /// <param name="nombre"> nombre de la organización a abrir</param>
+        private void abreOrganizacion(string tipo, string nombre)
+        {
+            Usuario aUsr;
+
+            this.verificaOrgAbierta(nombre);
+            if (!this.papi.orgAbierta)
+            {
+                aUsr = this.papi.pideUsuario(Archivo.path + '\\' + tipo + '\\' + nombre + ".usr");
+                if (aUsr != null)
+                {
+                    if (this.papi.verificaUsuario(aUsr))
+                    {
+                        this.papi.abreOrganizacion(tipo[0], nombre, aUsr, null, false);
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Verifica si existe una organizacion abierta. Si cumple,
+        /// pregunta si se desea cambiar de organización
+        /// </summary>
+        /// <returns>true si se desea cambiar de organización, de lo contrario regresa false</returns>
+        private bool verificaOrgAbierta(string orgAbrir)
+        {
+            bool band = false;
+
+            if (this.papi.orgAbierta)
+            {
+                if (this.papi.org.nombre.Remove(this.papi.org.nombre.Length - 4) != orgAbrir)
+                {
+                    if (MessageBox.Show("¿Seguro que quieres cerrar esta organización?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
+                    {
+                        this.papi.cierraOrg();
+                        band = true;
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Organización actualmente abierta");
+                }
+            }
+
+            return band;
+        }
 
     }
 }

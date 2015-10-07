@@ -46,7 +46,6 @@ namespace BaseDeDatos
             this.ControlDatos = new dgvDatos(this);
             this.Org = null;
             this.labelComment = new ToolStripStatusLabel();
-
             InitializeComponent();
         }
 
@@ -72,6 +71,7 @@ namespace BaseDeDatos
         {
             Point tamañoForma = new Point(this.ClientSize.Width,this.ClientSize.Height);
 
+            this.SuspendLayout();
             tamañoForma.Y -= this.statusStrip1.Height;
             tamañoForma.Y -= this.menu.Height;
             tamañoForma.Y -= 4 * (int)this.espacioEntreControles;    // numero de controles multiplicado por el espacio que hay entre ellos
@@ -85,6 +85,7 @@ namespace BaseDeDatos
                                                     tamañoForma.Y * this.ControlDatos.TamañoPorcentaje().Y / 100);
             this.actualizaUbicacionControles();
 
+            this.ResumeLayout();
         }
 
         private void actualizaUbicacionControles()
@@ -144,8 +145,9 @@ namespace BaseDeDatos
         /// <param name="listEnt">Lista de entidades a insertar si se creó una nueva organizacion</param>
         /// <param name="nueva">variable booleana para indicar si la organización es nueva,si es true crea un usuario,de lo contrario 
         /// inicia con uno previamente validado</param>
-        private void abreOrganizacion(char tipo,string nombre,Usuario us,List<Entidad>listEnt,bool nueva)
+        public void abreOrganizacion(char tipo,string nombre,Usuario us,List<Entidad>listEnt,bool nueva)
         {
+            
             
             switch (tipo)
             {
@@ -154,7 +156,8 @@ namespace BaseDeDatos
                     this.Org = new Secuencial(nombre + ".scl", us);
                     if (nueva)
                     {
-                        this.Org.altaUsuario(us);   
+                        this.Org.altaUsuario(new Usuario("admin", "admin", new bool[] { true, true, true, true }, new DateTime(01,01,0001), new DateTime(01, 01,0001)));
+                        this.Org.altaUsuario(us);
                     }
                     
                     if (this.Org != null)
@@ -189,65 +192,30 @@ namespace BaseDeDatos
             }
             this.controlArch.RefreshArch();
         }
-        
 
-        /// <summary>
-        /// Método que se llama cuando se va abrir una organización ya existente
-        /// </summary>
-        /// <param name="tipo">tipo de la organización a abrir</param>
-        /// <param name="nombre"> nombre de la organización a abrir</param>
-        public void abreOrganizacion(string tipo, string nombre)
-        {
-            Usuario aUsr;
-
-            this.verificaOrgAbierta(nombre);
-            if (this.Org == null)
-            {
-                aUsr = this.pideUsuario(Archivo.path+'\\'+tipo+'\\'+nombre+".usr");
-                if (aUsr != null)
-                {
-                    if (aUsr.vigFin.CompareTo(DateTime.Now) > 0)
-                    {
-                        this.abreOrganizacion(tipo[0], nombre, aUsr, null, false);
-                    }
-                    else
-                    {
-                        MessageBox.Show("El usuario no está vigente");
-                    }
-                }
-            }
-        }
-
-        
-        /// <summary>
-        /// Verifica si existe una organizacion abierta. Si cumple,
-        /// pregunta si se desea cambiar de organización
-        /// </summary>
-        /// <returns>true si se desea cambiar de organización, de lo contrario regresa false</returns>
-        private bool verificaOrgAbierta(string orgAbrir)
+        public bool verificaUsuario(Usuario aUsr)
         {
             bool band = false;
 
-            if (this.Org != null)
+            if ((aUsr.nombre.Equals("admin") && aUsr.vigFin.ToShortDateString() == "01/01/0001") || aUsr.vigFin.CompareTo(DateTime.Now) > 0)
             {
-                if (this.Org.nombre .Remove(this.Org.nombre.Length-4)!= orgAbrir)
-                {
-                    if (MessageBox.Show("¿Seguro que quieres cerrar esta organización?", "", MessageBoxButtons.YesNo, MessageBoxIcon.Warning) == DialogResult.Yes)
-                    {
-                        this.Org = null;
-                        this.controlEnt.limpiaControl();
-                        this.controlAtr.limpiaControl();
-                        this.ControlDatos.limpiaControl();
-                        this.ControlDatos.actualizaUsuario("");
-                        band = true;
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Organización actualmente abierta");
-                }
+                band = true;
             }
+            else
+            {
+                MessageBox.Show("El usuario no está vigente");
+            }
+
             return band;
+        }
+
+        public void cierraOrg()
+        {
+            this.Org = null;
+            this.controlEnt.limpiaControl();
+            this.controlAtr.limpiaControl();
+            this.ControlDatos.limpiaControl();
+            this.ControlDatos.actualizaUsuario("");
         }
 
         /// <summary>

@@ -25,13 +25,13 @@ namespace BaseDeDatos
                 switch (listAtr[i].tipo)
                 {
                     case Atributo.entero:
-                        agregaDatoBloque(BitConverter.GetBytes((int)registro.Cells[i].Value), sizeof(int), bloque, ref pos);
+                        agregaDatoBloque(BitConverter.GetBytes(int.Parse(registro.Cells[i].Value.ToString())), sizeof(int), bloque, ref pos);
                         break;
                     case Atributo.flotante:
-                        agregaDatoBloque(BitConverter.GetBytes((float)registro.Cells[i].Value), sizeof(float), bloque, ref pos);
+                        agregaDatoBloque(BitConverter.GetBytes(float.Parse(registro.Cells[i].Value.ToString())), sizeof(float), bloque, ref pos);
                         break;
                     case Atributo.caracter:
-                        agregaDatoBloque(BitConverter.GetBytes((char)registro.Cells[i].Value), sizeof(char), bloque, ref pos);
+                        agregaDatoBloque(BitConverter.GetBytes(char.Parse(registro.Cells[i].Value.ToString())), sizeof(char), bloque, ref pos);
                         break;
                     case Atributo.cadena:
                         agregaDatoBloque(convierteCadena(registro.Cells[i].Value.ToString()), sizeof(int), bloque, ref pos);
