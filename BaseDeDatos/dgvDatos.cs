@@ -141,7 +141,8 @@ namespace BaseDeDatos
                 foreach (int i in this.filasNuevas)
                 {
                     r = (base.controlPrincipal as DataGridView).Rows[i];
-                    Bloque.creaBloque(listAtr, r);
+                    
+                    Bloque.leeBloque(Bloque.creaBloque(listAtr, r),listAtr);
                 }
             }
         }

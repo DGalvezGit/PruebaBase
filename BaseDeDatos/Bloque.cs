@@ -40,7 +40,7 @@ namespace BaseDeDatos
                         {
                             cad+='~';
                         }
-                        agregaDatoBloque(convierteCadena(cad, (sizeof(char) / 2) * cad.Length),(sizeof(char)/2)*cad.Length, bloque, ref pos);
+                        agregaDatoBloque(convierteCadena(cad, (sizeof(char)/2) * cad.Length),(sizeof(char)/2)*cad.Length, bloque, ref pos);
                         break;
                 }
             }
@@ -96,33 +96,56 @@ namespace BaseDeDatos
             return tam;
         }
 
-        private static void leeBloque(byte[] b,List<Atributo>listAtr)
+        public static void leeBloque(byte[] b,List<Atributo>listAtr)
         {
             int tam=0;
-            
+            int entero;
+            float flotante;
+            byte[] bDato;
+            char car;
+            string cad="";
+            int pos = 8;
 
             for (int i = 0; i < listAtr.Count; i++)
             {
                 switch (listAtr[i].tipo)
                 {
                     case Atributo.entero:
-                            b.
-                        break;
-                    case Atributo.flotante:
-                        
-                        break;
-                    case Atributo.caracter:
-                        agregaDatoBloque(BitConverter.GetBytes(char.Parse(registro.Cells[i].Value.ToString())), sizeof(char) / 2, bloque, ref pos);
-                        break;
-                    case Atributo.cadena:
-                        cad = registro.Cells[i].Value.ToString();
-                        for (int j = cad.Length; j < tamCad; j++)
+                        tam = sizeof(int);
+                        bDato = new byte[tam];
+                        for (int j = 0; j < tam; j++)
                         {
-                            cad += '~';
+                            bDato[j] = b[pos + j];
                         }
-                        agregaDatoBloque(convierteCadena(cad, (sizeof(char) / 2) * cad.Length), (sizeof(char) / 2) * cad.Length, bloque, ref pos);
-                        break;
+                        entero = BitConverter.ToInt32(bDato,0);
+                    break;
+                    case Atributo.flotante:
+                        tam = sizeof(float);
+                        bDato = new byte[tam];
+                        for (int j = 0; j < tam; j++)
+                        {
+                            bDato[j] = b[pos + j];
+                        }
+                        flotante = BitConverter.ToSingle(bDato, 0);
+                    break;
+                    case Atributo.caracter:
+                        tam = sizeof(char)/2;
+                        bDato = new byte[tam];
+                        for (int j = 0; j < tam; j++)
+                        {
+                            bDato[j] = b[pos + j];
+                        }
+                        car = BitConverter.ToChar(bDato, 0);
+                    break;
+                    case Atributo.cadena:
+                        tam = (sizeof(char)/2)*tamCad;
+                        for (int j = 0; j < tam; j++)
+                        {
+                            cad += Convert.ToChar(b[pos + j]);
+                        }
+                    break;
                 }
+                pos += tam;
             }
         }
 
