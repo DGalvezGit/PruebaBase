@@ -16,6 +16,7 @@ namespace BaseDeDatos
             int tamBloq;
             int pos =0;
             byte[] apBloq = BitConverter.GetBytes(((long)-1)); //Apuntador a siguiente bloque
+            string cad;
 
             tamBloq = calculaTamBloque(listAtr);
             bloque = new byte[tamBloq];
@@ -31,10 +32,15 @@ namespace BaseDeDatos
                         agregaDatoBloque(BitConverter.GetBytes(float.Parse(registro.Cells[i].Value.ToString())), sizeof(float), bloque, ref pos);
                         break;
                     case Atributo.caracter:
-                        agregaDatoBloque(BitConverter.GetBytes(char.Parse(registro.Cells[i].Value.ToString())), sizeof(char), bloque, ref pos);
+                        agregaDatoBloque(BitConverter.GetBytes(char.Parse(registro.Cells[i].Value.ToString())), sizeof(char)/2, bloque, ref pos);
                         break;
                     case Atributo.cadena:
-                        agregaDatoBloque(convierteCadena(registro.Cells[i].Value.ToString()), sizeof(int), bloque, ref pos);
+                        cad = registro.Cells[i].Value.ToString();
+                        for (int j = cad.Length; j < tamCad; j++)
+                        {
+                            cad+='~';
+                        }
+                        agregaDatoBloque(convierteCadena(cad, (sizeof(char) / 2) * cad.Length),(sizeof(char)/2)*cad.Length, bloque, ref pos);
                         break;
                 }
             }
@@ -42,13 +48,13 @@ namespace BaseDeDatos
             return bloque;
         }
 
-        private static byte[] convierteCadena(string cad)
+        private static byte[] convierteCadena(string cad,int tam)
         {
-            byte[] b = new byte[sizeof(char)*tamCad];
+            byte[] b = new byte[tam];
 
             for(int i=0;i<cad.Length;i++)
             {
-                b.Concat(BitConverter.GetBytes(cad[i]));
+                b[i] = BitConverter.GetBytes(cad[i])[0];
             }
 
             return b;
@@ -67,7 +73,6 @@ namespace BaseDeDatos
         {
             int tam=0;
             
-            
             foreach (Atributo atr in listAtr)
             {
                 switch (atr.tipo)
@@ -79,10 +84,10 @@ namespace BaseDeDatos
                         tam += sizeof(float);
                     break;
                     case Atributo.caracter:
-                        tam += sizeof(char);
+                        tam += sizeof(char)/2;
                     break;
                     case Atributo.cadena:
-                        tam += sizeof(char)*tamCad;
+                        tam += (sizeof(char)/2)*tamCad;
                     break;
                 }
             }
@@ -90,7 +95,36 @@ namespace BaseDeDatos
 
             return tam;
         }
-        
+
+        private static void leeBloque(byte[] b,List<Atributo>listAtr)
+        {
+            int tam=0;
+            
+
+            for (int i = 0; i < listAtr.Count; i++)
+            {
+                switch (listAtr[i].tipo)
+                {
+                    case Atributo.entero:
+                            b.
+                        break;
+                    case Atributo.flotante:
+                        
+                        break;
+                    case Atributo.caracter:
+                        agregaDatoBloque(BitConverter.GetBytes(char.Parse(registro.Cells[i].Value.ToString())), sizeof(char) / 2, bloque, ref pos);
+                        break;
+                    case Atributo.cadena:
+                        cad = registro.Cells[i].Value.ToString();
+                        for (int j = cad.Length; j < tamCad; j++)
+                        {
+                            cad += '~';
+                        }
+                        agregaDatoBloque(convierteCadena(cad, (sizeof(char) / 2) * cad.Length), (sizeof(char) / 2) * cad.Length, bloque, ref pos);
+                        break;
+                }
+            }
+        }
 
     }
 }
