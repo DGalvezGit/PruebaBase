@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace BaseDeDatos
 {
@@ -10,7 +11,7 @@ namespace BaseDeDatos
     {
         private static int tamCad = 100;
 
-        public static byte[] creaBloque(List<Atributo>listAtr,System.Windows.Forms.DataGridViewRow registro)
+        public static byte[] creaBloque(List<Atributo>listAtr,DataGridViewRow registro)
         {
             byte[] bloque;
             int tamBloq;
@@ -69,7 +70,7 @@ namespace BaseDeDatos
             pos += tam;
         }
 
-        private static int calculaTamBloque(List<Atributo> listAtr)
+        public static int calculaTamBloque(List<Atributo> listAtr)
         {
             int tam=0;
             
@@ -96,7 +97,7 @@ namespace BaseDeDatos
             return tam;
         }
 
-        public static void leeBloque(byte[] b,List<Atributo>listAtr)
+        public static void convierteBloque(byte[] b,List<Atributo>listAtr)
         {
             int tam=0;
             int entero;
@@ -105,49 +106,113 @@ namespace BaseDeDatos
             char car;
             string cad="";
             int pos = 8;
-
+            
             for (int i = 0; i < listAtr.Count; i++)
             {
                 switch (listAtr[i].tipo)
                 {
                     case Atributo.entero:
-                        tam = sizeof(int);
-                        bDato = new byte[tam];
-                        for (int j = 0; j < tam; j++)
-                        {
-                            bDato[j] = b[pos + j];
-                        }
-                        entero = BitConverter.ToInt32(bDato,0);
+                        entero = convierteEntero(b,pos,ref tam);
                     break;
                     case Atributo.flotante:
-                        tam = sizeof(float);
-                        bDato = new byte[tam];
-                        for (int j = 0; j < tam; j++)
-                        {
-                            bDato[j] = b[pos + j];
-                        }
-                        flotante = BitConverter.ToSingle(bDato, 0);
+                        
+                        flotante = convierteFlotante(b,pos, ref tam);
                     break;
                     case Atributo.caracter:
-                        tam = sizeof(char)/2;
-                        bDato = new byte[tam];
-                        for (int j = 0; j < tam; j++)
-                        {
-                            bDato[j] = b[pos + j];
-                        }
-                        car = BitConverter.ToChar(bDato, 0);
+                        car = convierteChar(b,pos, ref tam);
                     break;
                     case Atributo.cadena:
-                        tam = (sizeof(char)/2)*tamCad;
-                        for (int j = 0; j < tam; j++)
-                        {
-                            cad += Convert.ToChar(b[pos + j]);
-                        }
+                        cad = convierteCadena(b,pos, ref tam);
                     break;
                 }
                 pos += tam;
             }
         }
 
+        public static int convierteEntero(byte[] b,int pos,ref int tam)
+        {
+            tam = sizeof(int);
+            byte[] bDato = new byte[tam];
+
+            for (int j = 0; j < tam; j++)
+            {
+                bDato[j] = b[pos + j];
+            }
+
+            return BitConverter.ToInt32(bDato, 0);
+        }
+
+        public static float convierteFlotante(byte[] b, int pos,ref int tam)
+        {
+            tam = sizeof(float);
+            byte [] bDato = new byte[tam];
+
+            for (int j = 0; j < tam; j++)
+            {
+                bDato[j] = b[pos + j];
+            }
+
+            return BitConverter.ToSingle(bDato, 0);
+        }
+
+        public static char convierteChar(byte[] b, int pos, ref int tam)
+        {
+            tam = sizeof(char) / 2;
+            char car = '\0';
+
+            for (int j = 0; j < tam; j++)
+            {
+                car = Convert.ToChar(b[pos + j]);
+            }
+
+            return car;
+        }
+
+        public static string convierteCadena(byte[] b,int pos, ref int tam)
+        {
+            tam = (sizeof(char) / 2) * tamCad;
+            char car;
+            string cad="";
+
+            for (int j = 0; j < tam; j++)
+            {
+                car = Convert.ToChar(b[pos + j]);
+                if (!car.Equals('~'))
+                {
+                    cad += car;
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            return cad;
+        }
+
+        public static long leeApBloq(byte[] b)
+        {
+            long apSigBloq = 0;
+            byte[] dato;
+
+            dato = new byte[sizeof(long)];
+            for (int j = 0; j < sizeof(long); j++)
+            {
+                dato[j] = b[j];
+            }
+            apSigBloq = BitConverter.ToInt32(dato, 0);
+
+            return apSigBloq;
+        }
+
+        public static byte[] reescribeApSigBloq(long pos, byte[]bloque)
+        {
+            int posicion =0;
+
+            byte[] apBloq = BitConverter.GetBytes(pos);
+            agregaDatoBloque(apBloq, sizeof(long), bloque,ref posicion);
+
+            return bloque;
+        }
     }
 }

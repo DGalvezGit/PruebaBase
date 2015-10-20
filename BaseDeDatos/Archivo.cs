@@ -12,9 +12,9 @@ namespace BaseDeDatos
         static string Path = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments) + "\\Base De Datos";
         public static string path
         {
-            get{ return Path; }
+            get { return Path; }
         }
-        
+
 
         /// <summary>
         /// Verifica si existe el directorio de la organización
@@ -110,7 +110,7 @@ namespace BaseDeDatos
         public static DirectoryInfo informacionDirectorio(string path)
         {
             DirectoryInfo df = new DirectoryInfo(path);
-            
+
             return df;
         }
 
@@ -129,7 +129,7 @@ namespace BaseDeDatos
                 using (FileStream fs = new FileStream(path, FileMode.Append))
                 {
                     pos = fs.Position;
-                    escribeUsuario(fs,us);
+                    escribeUsuario(fs, us);
                 }
             }
             catch (Exception ex)
@@ -141,7 +141,7 @@ namespace BaseDeDatos
             return pos;
         }
 
-        private static bool escribeUsuario(FileStream fs,Usuario us)
+        private static bool escribeUsuario(FileStream fs, Usuario us)
         {
             bool band = false;
             using (BinaryWriter bw = new BinaryWriter(fs))
@@ -165,7 +165,7 @@ namespace BaseDeDatos
         {
             string nombre;
             string psw;
-            DateTime dateIni,dateFin;
+            DateTime dateIni, dateFin;
             bool[] permisos = new bool[4];
             long sig;
             Usuario usr = null;
@@ -188,7 +188,7 @@ namespace BaseDeDatos
                         sig = br.ReadInt64();
                     }
                 }
-                usr = new Usuario(nombre, psw, permisos, dateIni,dateFin);
+                usr = new Usuario(nombre, psw, permisos, dateIni, dateFin);
                 usr.sigUs = sig;
             }
             catch (Exception ex)
@@ -199,7 +199,7 @@ namespace BaseDeDatos
 
             return usr;
         }
-        
+
         public static bool reescribeUsuario(string path, Usuario us, long pos)
         {
             bool band = false;
@@ -221,9 +221,86 @@ namespace BaseDeDatos
             return band;
         }
 
-        
+        //-----------------------------------------------------BLOQUE-----------------------------------------------------
+        //-----------------------------------------------------BLOQUE-----------------------------------------------------
+        //-----------------------------------------------------BLOQUE-----------------------------------------------------
+        //-----------------------------------------------------BLOQUE-----------------------------------------------------
+
+        public static byte[] leeBloque(string ruta, int tam, long pos)
+        {
+            byte[] bloq = new byte[tam];
+
+            try
+            {
+                using (FileStream fs = new FileStream(ruta, FileMode.Open))
+                {
+                    fs.Seek(pos, SeekOrigin.Begin);
+                    using (BinaryReader br = new BinaryReader(fs))
+                    {
+                        bloq = br.ReadBytes(tam);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+                bloq = null;
+            }
 
 
+            return bloq;
+        }
+
+
+        public static long escribeBloque(string ruta, byte[] bloq)
+        {
+            long pos = 0;
+
+            try
+            {
+                using (FileStream fs = new FileStream(ruta, FileMode.Append))
+                {
+                    pos = fs.Position;
+                    altaBloque(fs,bloq);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+                pos = 0;
+            }
+
+            return pos;
+        }
+
+        public static bool reescribeBloque(string ruta, byte[] bloq,long pos)
+        {
+            bool band = true;
+
+            try
+            {
+                using (FileStream fs = new FileStream(ruta, FileMode.Open, FileAccess.Write))
+                {
+                    fs.Seek(pos, SeekOrigin.Begin);
+                    altaBloque(fs, bloq);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Windows.Forms.MessageBox.Show(ex.Message);
+                band = false;
+            }
+
+            return band;
+        }
+
+        public static void altaBloque(FileStream fs,byte[] b)
+        {
+            using (BinaryWriter bw = new BinaryWriter(fs))
+            {
+                bw.Write(b);
+            }
+        }
     }
 
 }

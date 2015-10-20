@@ -214,6 +214,7 @@ namespace BaseDeDatos
                 base.label.Text = "Escribe un nombre";
                 f.Controls.Add(base.label);
                 f.Controls.Add(base.controlPrincipal);
+                base.controlPrincipal.Focus();
                 this.ubicacion(f.ClientSize.Width/2-this.tamControl.X/2,f.ClientSize.Height/2-this.tamControl.Y);
             }
 
@@ -540,7 +541,7 @@ namespace BaseDeDatos
 
                 columnCamp.HeaderText = "Campo";
                 columnCamp.Name = "ColumnCamp";
-                columnCamp.Items.AddRange(new string[] { "CR", "CN" });
+                columnCamp.Items.AddRange(new string[] { Atributo.CR, Atributo.NR });
                 columnCamp.Width = 50;
                 columnCamp.DisplayStyle = DataGridViewComboBoxDisplayStyle.ComboBox;
                 columnCamp.AutoSizeMode = DataGridViewAutoSizeColumnMode.None;

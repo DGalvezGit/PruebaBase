@@ -9,15 +9,15 @@ namespace BaseDeDatos
 {
     class Secuencial : Organizacion
     {
-        public Secuencial(string nombre, Usuario us) : base(nombre, us,"Secuencial")
+        public Secuencial(string nombre, Usuario us) : base(nombre, us, "Secuencial")
         {
-            
+
         }
-#region ----------------------------------ENTIDADES-----------------------------------------------------
+        #region ----------------------------------ENTIDADES-----------------------------------------------------
         public bool agregaEntidades(List<Entidad> listEnt)
         {
             bool band = false;
-            
+
             if (listEnt != null)
             {
                 foreach (Entidad ent in listEnt)
@@ -32,11 +32,11 @@ namespace BaseDeDatos
                     }
                 }
             }
-            
+
 
             return band;
         }
-        
+
         /// <summary>
         /// Lee una entidad que se encuentra en una determinada posición del archivo
         /// </summary>
@@ -55,6 +55,8 @@ namespace BaseDeDatos
                     {
                         aEnt.nombre = br.ReadString();
                         aEnt.apAtr = br.ReadInt64();
+                        aEnt.apBloq = br.ReadInt64();
+                        aEnt.apRef = br.ReadInt64();
                         aEnt.sigEnt = br.ReadInt64();
                     }
                 }
@@ -67,7 +69,7 @@ namespace BaseDeDatos
             return aEnt;
         }
 
-        
+
         /// <summary>
         /// Graba en el archivo la entidad
         /// </summary>
@@ -77,7 +79,7 @@ namespace BaseDeDatos
         protected override long insertaEntidad(Entidad ent)
         {
             long pos = 0;
-            
+
             try
             {
                 using (FileStream fs = new FileStream(base.ruta, FileMode.Append))
@@ -87,6 +89,8 @@ namespace BaseDeDatos
                     {
                         bw.Write(ent.nombre);
                         bw.Write((ent as EntSecuencial).apAtr);
+                        bw.Write((ent as EntSecuencial).apBloq);
+                        bw.Write((ent as EntSecuencial).apRef);
                         bw.Write(ent.sigEnt);
                     }
                 }
@@ -98,7 +102,7 @@ namespace BaseDeDatos
 
             return pos;
         }
-        
+
         /// <summary>
         /// Reescribe la entidad en el archivo
         /// </summary>
@@ -118,6 +122,8 @@ namespace BaseDeDatos
                     {
                         bw.Write(ent.nombre);
                         bw.Write((ent as EntSecuencial).apAtr);
+                        bw.Write((ent as EntSecuencial).apBloq);
+                        bw.Write((ent as EntSecuencial).apRef);
                         bw.Write(ent.sigEnt);
                     }
                 }
@@ -131,17 +137,17 @@ namespace BaseDeDatos
             return band;
         }
 
-        
+
 
         #endregion
 
-        //-----------------------------------------------------ATRIBUTOS-----------------------------------------------------
+        #region-----------------------------------------------------ATRIBUTOS-----------------------------------------------------
 
         public override bool altaAtributo(string nomEnt, Atributo atr, bool orden)
         {
             bool band = false;
             Entidad aEnt;
-            
+
             aEnt = this.buscaEntidad(nomEnt);
             this.altaAtributo(aEnt, atr, orden);
 
@@ -155,7 +161,7 @@ namespace BaseDeDatos
         /// <param name="nombreAtr">nombre del atributo</param>
         /// <param name="tipo">tipo del atributo</param>
         /// <returns></returns>
-        public bool altaAtributo(Entidad ent, Atributo atr,bool orden)
+        public bool altaAtributo(Entidad ent, Atributo atr, bool orden)
         {
             bool band = false;
 
@@ -238,7 +244,7 @@ namespace BaseDeDatos
             posEnt = base.buscaPosEntidad(ent.nombre);
             if (posEnt != -1)
             {
-                band = this.reescribeEntidad( ent, posEnt);
+                band = this.reescribeEntidad(ent, posEnt);
             }
 
             return band;
@@ -289,7 +295,7 @@ namespace BaseDeDatos
             return band;
         }
 
-        
+
         public override long insertaAtributo(Atributo atr)
         {
             long pos = 0;
@@ -331,7 +337,7 @@ namespace BaseDeDatos
             Atributo aAtr = null;
             long pos;
 
-            
+
             if (ent != null)
             {
                 pos = (ent as EntSecuencial).apAtr;
@@ -379,12 +385,12 @@ namespace BaseDeDatos
 
             return pos;
         }
-        
+
 
         public override bool reescribeAtributo(Atributo atr, long pos)
         {
             bool band = true;
-            
+
             try
             {
                 using (FileStream fs = new FileStream(base.ruta, FileMode.Open, FileAccess.Write))
@@ -434,71 +440,84 @@ namespace BaseDeDatos
             return listAtr;
         }
 
-/*
-        public bool cambiaClaveAtributo(char clave, string nomEnt, string nomAtr)
-        {
-            Atributo atr;
-            Atributo atrPrim;
-            bool band = false;
+        #endregion
 
-            atr = this.buscaAtributo(nomEnt, nomAtr);
-            if (clave.Equals('p')) //si la clave que se quiere modificar es primaria
+
+        #region ----------------------------------BLOQUE-----------------------------------------------------
+
+        public override bool altaBloque(Entidad ent, byte[] b)
+        {
+            long pos;
+            bool band;
+
+            pos = Archivo.escribeBloque(base.ruta, b);
+            band = this.ligaBloque(ent, pos);
+
+            return band;
+        }
+
+        private bool ligaBloque(Entidad ent, long pos)
+        {
+            bool band = false;
+            long posEnt, posIt;
+            byte[] bloq = null;
+            long apSigBloq;
+
+            if ((ent as EntSecuencial).apBloq == -1)
             {
-                atrPrim = this.atributoPrimario(nomEnt);//busca un atributo con llave principal
-                if (atrPrim == null)
+                (ent as EntSecuencial).apBloq = pos;
+                posEnt = this.buscaPosEntidad(ent.nombre);
+                if (posEnt != -1)
                 {
-                    atr.clave = 'p';
-                    band = this.reescribeAtributo(nomEnt, nomAtr, atr);
+                    band = this.reescribeEntidad(ent, posEnt);
                 }
-                else
+            }
+            else
+            {
+                posIt = (ent as EntSecuencial).apBloq;
+                do
                 {
-                    if (atrPrim.nombre.Equals(atr.nombre)) // si el atributo que encontro con llave primaria es el mismo
+                    bloq = Archivo.leeBloque(base.ruta, Bloque.calculaTamBloque(ent.listAtr), posIt);
+                    apSigBloq = Bloque.leeApBloq(bloq);
+                    if (apSigBloq != -1)
                     {
-                        //VERIFICAR QUE EL ATRIBUTO NO TENGA RELACIONES
-//                        if(art.tiene relaciones)
-//                        {
-//                            System.Windows.Forms.MessageBox.Show("No se puede modificar el atributo porque tiene relaciones");
-//                        }
-//                        else  //si no tiene relaciones
-//                        atr.clave = '\0';
-//                        band = this.reescribeAtributo(nomEnt, nomAtr, atr);
-//                    }
-//                    else
-//                    {
-//                        System.Windows.Forms.MessageBox.Show("La entidad ya tiene un atributo con llave primaria");
-//                    }
-                }
+                        posIt = apSigBloq;
+                    }
+                } while (apSigBloq != -1);
+                Bloque.reescribeApSigBloq(pos, bloq);
+                band = Archivo.reescribeBloque(base.ruta, bloq, posIt);
             }
 
             return band;
         }
 
-        /// <summary>
-        /// busca un atributo con llave principal
-        /// </summary>
-        /// <param name="nomEnt">nombre de la entidad que contiene los atributos</param>
-        /// <returns>si lo encuentra regresa el atributo que tiene la llave principla de lo contrario regresa null</returns>
-        private Atributo atributoPrimario(string nomEnt)
-        {
-            Atributo atr = null;
-            List<Atributo> listAtr;
 
-            listAtr = this.listaAtributos(nomEnt);
-            foreach (Atributo a in listAtr)
+
+        #endregion
+
+        /// <summary>
+        /// regresa todos los registros de la entidad
+        /// </summary>
+        /// <param name="ent">Entidad con sus atributos</param>
+        public override List<byte[]> listaBloques(Entidad ent)
+        {
+            List<byte[]> listBloq = new List<byte[]>();
+            byte[] bloq;
+
+            long pos = (ent as EntSecuencial).apBloq;
+            int tamBloq = Bloque.calculaTamBloque(ent.listAtr);
+
+            while (pos != -1)
             {
-                if (a.clave.Equals('p'))
-                {
-                    atr = a;
-                    break;
-                }
+                bloq = Archivo.leeBloque(base.ruta, tamBloq, pos);
+                listBloq.Add(bloq);
+                pos = Bloque.leeApBloq(bloq);
             }
 
-            return atr;
+            return listBloq;
         }
-
-*/
 
     }
 
-    
+
 }

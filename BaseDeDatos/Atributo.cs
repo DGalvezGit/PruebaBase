@@ -15,6 +15,8 @@ namespace BaseDeDatos
         public const string flotante = "float";
         public const string caracter = "char";
         public const string cadena = "string";
+        public const string CR = "CR";
+        public const string NR = "NR";
         private string Nombre;
         public string nombre
         {

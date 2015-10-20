@@ -34,9 +34,13 @@ namespace BaseDeDatos
 
         public void selectedValueChanged(object o, EventArgs e)
         {
+            string ent;
+
             if ((o as ListBox).SelectedItem != null)
             {
-                papi.agregaAcontrolAtributos(this.entidadSeleccionada());
+                ent = this.entidadSeleccionada();
+                papi.agregaAcontrolAtributos(ent);
+                papi.agregaDatos(ent);
             }
         }
 

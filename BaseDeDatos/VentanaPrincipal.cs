@@ -312,6 +312,11 @@ namespace BaseDeDatos
 
             return us;
         }
+
+        public void agregaDatos(string nomEnt)
+        {
+            this.controlDatos.insertaDatos(this.org.buscaEntidad(nomEnt));
+        }
         
         
 

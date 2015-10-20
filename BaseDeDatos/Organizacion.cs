@@ -332,6 +332,24 @@ namespace BaseDeDatos
             return null;
         }
 
+        #endregion
+
+# region ---------------------------BLOQUE-----------------------------
+        public virtual bool altaBloque(Entidad ent, byte[] b)
+        {
+            return false;
+        }
+
+        public virtual List<byte[]> listaBloques(Entidad ent)
+        {
+            return null;
+        }
+
+        public byte[] leeBloque(int tam,long pos)
+        {
+            return Archivo.leeBloque(this.ruta, tam, pos);
+        }
+
 #endregion
     }
 }
