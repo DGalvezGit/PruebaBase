@@ -15,7 +15,8 @@ namespace BaseDeDatos
         private Button btnGuardar;
         private const string textBtnAgrega = "Agrega Registro";
         private const string textBtnGuardar= "Guardar";
-        private List<int> filasNuevas;
+        private List<int> filasNuevas; //Cuando se agregan nuevos registros y aún no se le da guardar
+        private List<int> filasEliminar; //Cuando se agregan nuevos registros y aún no se le da guardar
 
         public dgvDatos(VentanaPrincipal f):base()
         {
@@ -25,7 +26,8 @@ namespace BaseDeDatos
             base.tamañoPorcentajeX = 80;
             base.tamañoPorcentajeY = 100;
             this.inicializa(f);
-            this.filasNuevas = new List<int>();    
+            this.filasNuevas = new List<int>();
+            this.filasEliminar = new List<int>();
         }
 
         private void inicializa(Form f)
@@ -36,6 +38,7 @@ namespace BaseDeDatos
             base.inicializaControl(f,"");
             (base.controlPrincipal as DataGridView).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             (base.controlPrincipal as DataGridView).AllowUserToAddRows = false;
+            (base.controlPrincipal as DataGridView).CellValidating += DgvDatos_CellValidating;
             this.btnAgrega.Text = textBtnAgrega;
             this.btnGuardar.Text = textBtnGuardar;
             this.btnAgrega.Width = 100;
@@ -47,7 +50,132 @@ namespace BaseDeDatos
             f.Controls.Add(this.btnGuardar);
 
         }
-        
+
+        private void DgvDatos_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            bool band;
+
+            if (this.filasNuevas.Count > 0)
+            {
+                if (this.filasNuevas.Exists(a => a.Equals(e.RowIndex)))
+                {
+                    band = this.validaNuevoRegistro((base.controlPrincipal as DataGridView).Columns[e.ColumnIndex].Name,e);
+                    if (!band)
+                    {
+                        e.Cancel = true;
+                        this.btnGuardar.Enabled = false;
+                    }
+                    else
+                    {
+                        e.Cancel = false;
+                        (base.controlPrincipal as DataGridView).Rows[e.RowIndex].ErrorText = "";
+                        this.btnGuardar.Enabled = true;
+                    }
+                }
+            }
+        }
+
+        private bool validaNuevoRegistro(string nomAtr, DataGridViewCellValidatingEventArgs e)
+        {
+            bool band = true;
+            int entero;
+            float flotante;
+            char car;
+            Atributo atr;
+            Entidad ent = this.f.org.buscaEntidad(this.f.entidadSeleccionada());
+
+            ent.agregaAtributos(this.f.org.listaAtributos(ent.nombre));
+            atr = ent.listAtr.Find(a=>a.nombre.Equals(nomAtr));
+            if (atr != null)
+            {
+                if (atr.campo.Equals(Atributo.CR))
+                {
+                    if (e.FormattedValue.Equals(""))
+                    {
+                        (base.controlPrincipal as DataGridView).Rows[e.RowIndex].ErrorText = "Campo requerido";
+                        band = false;
+                    }
+                }
+                if (band && !e.FormattedValue.Equals(""))
+                {
+                    switch (atr.tipo)
+                    {
+                        case Atributo.entero:
+                            band = int.TryParse(e.FormattedValue.ToString(), out entero);
+                            break;
+                        case Atributo.flotante:
+                            band = float.TryParse(e.FormattedValue.ToString(), out flotante);
+                            break;
+                        case Atributo.caracter:
+                            band = char.TryParse(e.FormattedValue.ToString(), out car);
+                            if (band)
+                            {
+                                car = car.ToString().ToUpper()[0];
+                            }
+                            break;
+                        default:
+                            band = true;
+                            break;
+                    }
+                    if (!band)
+                    {
+                        (base.controlPrincipal as DataGridView).Rows[e.RowIndex].ErrorText = "El dato debe ser: " + atr.tipo;
+                    }
+                    else
+                    {
+                        if (atr.llave == Atributo.KP)
+                        {
+                            if (this.checaRepetido(atr.nombre, e.FormattedValue.ToString()))
+                            {
+                                (base.controlPrincipal as DataGridView).Rows[e.RowIndex].ErrorText = "clave repetida";
+                                band = false;
+                            }
+                        }
+                        else if (atr.llave == Atributo.KF)
+                        {
+                            Relacion rel = atr.listRel.Find(a=>a.nomAtr.Equals(atr.nombre));
+                            ent = this.f.org.buscaEntidad(rel.nomEnt,Archivo.path+'\\'+this.f.org.tipo+'\\'+rel.bd);
+
+                            ent.agregaAtributos(this.f.org.listaAtributos(rel.nomEnt, Archivo.path + '\\' + this.f.org.tipo + '\\' + rel.bd));
+                            if (null == this.f.org.buscaBloque(ent, ent.listAtr, rel.nomAtr, e.FormattedValue.ToString(), Archivo.path + '\\' + this.f.org.tipo + '\\' + rel.bd))
+                            {
+
+                                if (MessageBox.Show("No se encontro registro en la relacion.\nDeseas continuar", "Error", MessageBoxButtons.YesNo) == DialogResult.No)
+                                {
+                                    this.filasEliminar.Add(e.RowIndex);
+                                    this.btnGuardar.Visible = false;
+                                    this.filasNuevas.RemoveAt(this.filasNuevas.FindIndex(a => a.Equals(e.RowIndex)));
+                                    band = true;
+                                }
+                                else
+                                {
+                                    band = false;
+                                }
+                                
+                            }
+                            
+                        }
+                    }
+                }
+                
+            }
+
+            return band;
+        }
+
+        /// <summary>
+        /// checa si ya existe un bloque con con el mismo dato de llave principal
+        /// </summary>
+        /// /// <param name="nomAtr">nombre del atributo</param>
+        /// <param name="dato">dato a comparar</param>
+        /// <returns>true si está repetido de lo contrario false</returns>
+        private bool checaRepetido(string nomAtr, string dato)
+        {
+            Entidad ent = this.f.org.buscaEntidad(this.f.entidadSeleccionada());
+
+            return this.f.org.buscaBloque(ent, this.f.org.listaAtributos(ent.nombre), nomAtr, dato) != null ? true : false;
+        }
+
 
         public void limpiaControl()
         {
@@ -118,6 +246,7 @@ namespace BaseDeDatos
                         this.filasNuevas.Add((base.controlPrincipal as DataGridView).RowCount - 1);
                         this.btnGuardar.Visible = true;
                         this.ubicaBotones();
+                        this.btnGuardar.Enabled = false;
                     }
                     catch (InvalidOperationException x)
                     {
@@ -144,6 +273,7 @@ namespace BaseDeDatos
             Entidad ent = this.f.org.buscaEntidad(this.f.entidadSeleccionada());
 
             ent.agregaAtributos(this.f.org.listaAtributos(ent.nombre));
+            
             if (this.filasNuevas.Count > 0)
             {
                 foreach (int i in this.filasNuevas)
@@ -151,11 +281,16 @@ namespace BaseDeDatos
                     r = (base.controlPrincipal as DataGridView).Rows[i];
                     this.f.org.altaBloque(ent, Bloque.creaBloque(listAtr, r));
                 }
+                this.filasNuevas.Clear();
             }
+            this.insertaDatosDataGrid(ent);
         }
 
-
-        public void insertaDatos(Entidad ent)//por ahora se va a tomar en cuenta una organizacion secuencial
+        /// <summary>
+        /// Recupera los datos guardados en el archivo y los pone en el control
+        /// </summary>
+        /// <param name="ent"></param>
+        public void insertaDatosDataGrid(Entidad ent)//por ahora se va a tomar en cuenta una organizacion secuencial
         {
 
             long posIt = (ent as EntSecuencial).apBloq;
@@ -171,12 +306,12 @@ namespace BaseDeDatos
                 {
                     bloq = this.f.org.leeBloque(tam, posIt);
                     posIt = Bloque.leeApBloq(bloq);
-                    this.insertaDatosFila(bloq, ent.listAtr);
+                    this.insertaDatosDataGridFila(bloq, ent.listAtr);
                 }
             }
         }
 
-        private void insertaDatosFila(byte[] b,List<Atributo>listAtr)
+        private void insertaDatosDataGridFila(byte[] b,List<Atributo>listAtr)
         {
             int pos = 8;
             int indiceFila = (base.controlPrincipal as DataGridView).Rows.Add();
@@ -203,65 +338,8 @@ namespace BaseDeDatos
             }
         }
 
-        /// <summary>
-        /// Verifica que los campos requeridos contengan datos y los tipos de datos correspondan
-        /// </summary>
-        /// <param name="r">fila a verificar</param>
-        /// <param name="listAtr">lista de atributos</param>
-        /// <returns>true si es ta bien la fila de lo contrario regresa false</returns>
-/*        private bool verificaFila(DataGridViewRow r,List<Atributo>listAtr)
-        {
-            bool band = true;
 
-            for (int i = 0; i < listAtr.Count && band; i++)
-            {
-                if (listAtr[i].llave == Atributo.KP)//si es llave principal
-                {
 
-                                       if (this.verificaCelda(r.Cells[i].Value.ToString(), listAtr[i]))
-                                       {
-                                           guarda en el archivo
-                                       }
-                   
-                }
-                
-                if (listAtr[i].campo == Atributo.NR)
-                {
-                    if (this.verificaCelda(r.Cells[i].Value.ToString(), listAtr[i]))
-                    {
-                        guarda en el archivo
-                    }
-
-                }
-                else // Si el campo es requerido y el usuario no le dio un valor
-                {
-                    band = false;
-                    MessageBox.Show("Fila: "+i+" ---El campo"+ listAtr[i].nombre +"es requerido");
-                }
-            }
-
-            return band;
-        }
-
-        private bool verificaCelda(string dato, Atributo atr)
-        {
-            bool band = true;
-
-            if (atr.llave == Atributo.KP)
-            {
-                verificar que no este repetido en el archivo
-                 si esta repetido 
-                 band=false;
-                 
-            }
-            if(band==true)
-            {
-                verificar que el dato sea entero o letra
-            }
-            
-
-            return band;
-        }
-*/
     }
+
 }

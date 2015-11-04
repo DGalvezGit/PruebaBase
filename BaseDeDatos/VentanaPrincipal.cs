@@ -315,7 +315,7 @@ namespace BaseDeDatos
 
         public void agregaDatos(string nomEnt)
         {
-            this.controlDatos.insertaDatos(this.org.buscaEntidad(nomEnt));
+            this.controlDatos.insertaDatosDataGrid(this.org.buscaEntidad(nomEnt));
         }
         
         

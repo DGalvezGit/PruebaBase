@@ -6,6 +6,34 @@ using System.Threading.Tasks;
 
 namespace BaseDeDatos
 {
+    public struct Relacion
+    {
+        private string Bd;
+        public string bd
+        {
+            get { return Bd; }
+        }
+        private string NomEnt;
+        public string nomEnt
+        {
+            get { return NomEnt; }
+        }
+        private string NomAtr;
+        public string nomAtr
+        {
+            get { return NomAtr; }
+        }
+        public long apSigRef;
+
+        public Relacion(string baseDatos, string entidad, string atributo, long siguiente)
+        {
+            Bd = baseDatos;
+            NomEnt = entidad;
+            NomAtr = atributo;
+            apSigRef = siguiente;
+        }
+    }
+
     public class Atributo
     {
         public const char KP = 'P';
@@ -67,10 +95,24 @@ namespace BaseDeDatos
             get{ return this.SigAtr;}
             set{ this.SigAtr = value; }
         }
+        private long SigRel;
+        public long sigRel
+        {
+            get { return this.SigRel; }
+            set { this.SigRel = value; }
+        }
+        
+        private List<Relacion> ListRel; //Contiene las relaciones que tiene el atributo si es llave principal o foranea
+        public List<Relacion> listRel
+        {
+            get { return this.ListRel; } 
+        }
 
         public Atributo()
         {
             this.SigAtr = -1;
+            this.SigRel = -1;
+            this.ListRel = new List<Relacion>();
         }
 
         public Atributo(string nombre,char llave,string tipo,string campo,string comentario):this()
@@ -94,5 +136,15 @@ namespace BaseDeDatos
 
             return coment;
         }
+
+        public void agregaRelacion(Relacion rel)
+        {
+            if (rel.bd != "" && rel.nomEnt != "" && rel.nomAtr != "")
+            {
+                this.ListRel.Add(rel);
+            }
+        }
+        
+
     }
 }

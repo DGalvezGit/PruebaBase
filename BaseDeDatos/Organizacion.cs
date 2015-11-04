@@ -178,6 +178,38 @@ namespace BaseDeDatos
         }
 
         /// <summary>
+        /// Busca una entidad existente en el archivo
+        /// </summary>
+        /// <param name="nomEnt">Nombre de la entidad a buscar</param>
+        /// <param name="path">Ruta del archivo</param>
+        /// <returns>Si encontró la entidad regresa true, de lo contrario regresa false</returns>
+        public Entidad buscaEntidad(string nomEnt,string path)
+        {
+            bool band = false;
+            long pos;
+            Entidad aEnt = null;
+
+            pos = Archivo.dameCab(path);
+            if (pos != 0)
+            {
+                while (pos > 0 && !band)
+                {
+                    aEnt = this.leeEntidad(pos,path);
+                    if (string.Equals(nomEnt, aEnt.nombre))
+                    {
+                        band = true;
+                    }
+                    else
+                    {
+                        pos = aEnt.sigEnt;
+                    }
+                }
+            }
+
+            return aEnt;
+        }
+
+        /// <summary>
         /// Liga la entidad a las otras entidades del archivo
         /// </summary>
         /// <param name="posEnt">posicion en la que se insertó</param>
@@ -206,6 +238,11 @@ namespace BaseDeDatos
         }
 
         protected virtual Entidad leeEntidad(long pos)
+        {
+            return null;
+        }
+
+        protected virtual Entidad leeEntidad(long pos,string path)
         {
             return null;
         }
@@ -244,7 +281,10 @@ namespace BaseDeDatos
         public bool cambiaClaveAtributo(string nomEnt,string nomAtr,char claveNueva)
         {
             bool band = false;
+            string nomBd, nomEntRel, nomAtrRel;
             Atributo atr;
+            Entidad entRel;
+            Relacion rel;
             
             atr = this.buscaAtributo(this.buscaEntidad(nomEnt), nomAtr);
             
@@ -253,8 +293,14 @@ namespace BaseDeDatos
                 case Atributo.KP:
                     if (claveNueva == atr.llave)
                     {
-                        System.Windows.Forms.MessageBox.Show("Verificar que no tenga llaves foraneas o eliminarlas");
-                        claveNueva = Atributo.None;
+                        if (atr.listRel.Count > 0)
+                        {
+                            System.Windows.Forms.MessageBox.Show("Imposible borrar, contiene relaciones establecidas");
+                        }
+                        else
+                        {
+                            claveNueva = Atributo.None;
+                        }
                     }
                     else
                     {
@@ -270,15 +316,28 @@ namespace BaseDeDatos
                             cf.ShowDialog();
                             if (cf.DialogResult == System.Windows.Forms.DialogResult.OK)
                             {
-                                atr.llave = claveNueva;
-                                atr.comentario = atr.comentario + "\t:" + cf.db() + ':' + cf.ent() + ':' + cf.atr();
-                                band = true;
+                                nomBd = cf.db();
+                                nomEntRel = cf.ent();
+                                entRel = this.buscaEntidad(nomEntRel, Archivo.path +'\\'+ this.tipo + '\\' + nomBd);
+                                nomAtrRel = cf.atr();
+                                rel = new Relacion(nomBd, nomEntRel, nomAtrRel, -1);
+                                if (this.altaRelacionEnKF(nomEnt, atr, rel))
+                                {
+
+                                    if (this.altaRelacionEnKP(nomEntRel, this.buscaAtributo(entRel, nomAtrRel, Archivo.path + '\\' + this.tipo + '\\' + nomBd), new Relacion(this.nombre, nomEnt, nomAtr, -1)))
+                                    {
+                                        atr.llave = claveNueva;
+                                        atr.comentario = atr.comentario + "\t:" + rel.bd + ':' + rel.nomEnt + ':' + rel.nomAtr;
+                                        band = true;
+                                    }
+                                }
                             }
                         }
                     }
                     else
                     {
                         atr.llave = Atributo.None;
+                        System.Windows.Forms.MessageBox.Show("Borrar relacion aun no implementada");
                         atr.comentario = atr.comentario.Remove(atr.comentario.IndexOf('\t'));
                         band = true;
                     }
@@ -307,6 +366,12 @@ namespace BaseDeDatos
             return null;
         }
 
+        public virtual Atributo leeAtributo(long pos, string path)
+        {
+            return null;
+            
+        }
+
         public virtual long insertaAtributo(Atributo atr)
         {
             return -1;
@@ -317,7 +382,17 @@ namespace BaseDeDatos
             return null;
         }
 
+        public virtual Atributo buscaAtributo(Entidad ent, string nomAtr,string path)
+        {
+            return null;
+        }
+
         public virtual long buscaPosAtributo(string nomEnt, string nomAtr)
+        {
+            return -1;
+        }
+
+        public virtual long buscaPosAtributo(string nomEnt, string nomAtr, string path)
         {
             return -1;
         }
@@ -327,14 +402,34 @@ namespace BaseDeDatos
             return false;
         }
 
+        public virtual bool reescribeAtributo(Atributo atr, long pos, string path)
+        {
+            return false;
+        }
+
         public virtual List<Atributo> listaAtributos(string nomEnt)
         {
             return null;
         }
 
+        public virtual List<Atributo> listaAtributos(string nomEnt,string path)
+        {
+            return null;
+        }
+
+        public virtual bool altaRelacionEnKF(string nomEnt, Atributo atr, Relacion rel)
+        {
+            return false;
+        }
+
+        public virtual bool altaRelacionEnKP(string nomEnt, Atributo atr, Relacion rel)
+        {
+            return false;
+        }
+
         #endregion
 
-# region ---------------------------BLOQUE-----------------------------
+        #region ---------------------------BLOQUE-----------------------------
         public virtual bool altaBloque(Entidad ent, byte[] b)
         {
             return false;
@@ -345,11 +440,42 @@ namespace BaseDeDatos
             return null;
         }
 
+        public virtual List<byte[]> listaBloques(Entidad ent,string path)
+        {
+            return null;
+        }
+
         public byte[] leeBloque(int tam,long pos)
         {
             return Archivo.leeBloque(this.ruta, tam, pos);
         }
+        
+        /// <summary>
+        /// Busca un bloque que contenga el dato recibido como paramentro
+        /// </summary>
+        /// <param name="ent">la entidad a la que pertenecen los datos</param>
+        /// <param name="listAtr"> lista de atributos de la entidad</param>
+        /// <param name="dato">dato a buscar en los bloques</param>
+        /// <returns>si se encontro regresa el bloque en caso contrario regresa null</returns>
+        public virtual byte[] buscaBloque(Entidad ent, List<Atributo> listAtr, string nomAtr, string dato)
+        {
+            return null;
+        }
 
-#endregion
+        /// <summary>
+        /// Busca un bloque que contenga el dato recibido como paramentro
+        /// </summary>
+        /// <param name="ent">la entidad a la que pertenecen los datos</param>
+        /// <param name="listAtr"> lista de atributos de la entidad</param>
+        /// <param name="dato">dato a buscar en los bloques</param>
+        /// <param name="path">ruta del archivo donde se va a buscar</param>
+        /// <returns>si se encontro regresa el bloque en caso contrario regresa null</returns>
+        public virtual byte[] buscaBloque(Entidad ent, List<Atributo> listAtr, string nomAtr, string dato,string path)
+        {
+            return null;
+        }
+
+
+        #endregion
     }
 }

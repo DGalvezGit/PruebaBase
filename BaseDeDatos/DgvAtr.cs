@@ -126,5 +126,6 @@ namespace BaseDeDatos
         {
             papi.agregaAcinta(((DataGridView)base.controlPrincipal).Rows[c.RowIndex].Cells["ColumnName"].Value.ToString());
         }
+
     }
 }
