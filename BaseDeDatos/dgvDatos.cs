@@ -17,6 +17,7 @@ namespace BaseDeDatos
         private const string textBtnGuardar= "Guardar";
         private List<int> filasNuevas; //Cuando se agregan nuevos registros y aún no se le da guardar
         private List<int> filasEliminar; //Cuando se agregan nuevos registros y aún no se le da guardar
+        private ContextMenuStrip cmsMenu;
 
         public dgvDatos(VentanaPrincipal f):base()
         {
@@ -33,12 +34,18 @@ namespace BaseDeDatos
         private void inicializa(Form f)
         {
             Size sz = TextRenderer.MeasureText(textBtnAgrega, this.btnAgrega.Font);
-
+            
+            this.inicializamenuContextual();
             base.controlPrincipal = new DataGridView();
             base.inicializaControl(f,"");
             (base.controlPrincipal as DataGridView).AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.Fill;
             (base.controlPrincipal as DataGridView).AllowUserToAddRows = false;
             (base.controlPrincipal as DataGridView).CellValidating += DgvDatos_CellValidating;
+            (base.controlPrincipal as DataGridView).CellMouseClick += DgvDatos_CellMouseClick;
+            (base.controlPrincipal as DataGridView).ReadOnly = true;
+          //  (base.controlPrincipal as DataGridView).EditMode = DataGridViewEditMode.EditProgrammatically;
+            //(base.controlPrincipal as DataGridView).CellBeginEdit += DgvDatos_CellBeginEdit;
+            (base.controlPrincipal as DataGridView).MultiSelect = false;
             this.btnAgrega.Text = textBtnAgrega;
             this.btnGuardar.Text = textBtnGuardar;
             this.btnAgrega.Width = 100;
@@ -48,7 +55,148 @@ namespace BaseDeDatos
             this.btnAgrega.Visible = false;
             f.Controls.Add(this.btnAgrega);
             f.Controls.Add(this.btnGuardar);
+        }
+        /*
+        private void DgvDatos_CellBeginEdit(object sender, DataGridViewCellCancelEventArgs e)
+        {
+            
+        }
+        */
+        private void inicializamenuContextual()
+        {
+            ToolStripMenuItem modificaDato = new ToolStripMenuItem("Modificar dato", null, EventHAndler_modificaDato);
+            ToolStripMenuItem eliminaRegistro = new ToolStripMenuItem("Elimina registro(Fila)", null, EventHAndler_eliminaRegistro);
 
+            cmsMenu = new ContextMenuStrip();
+            cmsMenu.Items.Add(modificaDato);
+            cmsMenu.Items.Add(eliminaRegistro);
+        }
+
+        private void EventHAndler_modificaDato(object o, EventArgs e)
+        {
+            string dato = "";
+            string nomAtr =(base.controlPrincipal as DataGridView).Columns[(base.controlPrincipal as DataGridView).CurrentCell.ColumnIndex].Name;
+            Entidad ent = this.f.org.buscaEntidad(this.f.entidadSeleccionada());
+            Atributo atr =this.f.org.buscaAtributo(ent,nomAtr);
+            byte[] bloqNuevo,bloqViejo;
+
+            if (!atr.llave.Equals(Atributo.KP) && !atr.llave.Equals(Atributo.KF))
+            {
+                
+                using (DModificaDato d = new DModificaDato(nomAtr))
+                {
+                    d.ShowDialog();
+                    if (d.DialogResult == DialogResult.OK)
+                    {
+                        dato = d.dato();
+                        if (this.validaDato(atr, dato))
+                        {
+                            ent.agregaAtributos(this.f.org.listaAtributos(ent.nombre));
+                            bloqViejo = Bloque.creaBloque(ent.listAtr, (base.controlPrincipal as DataGridView).Rows[(base.controlPrincipal as DataGridView).CurrentCell.RowIndex]);
+                            (base.controlPrincipal as DataGridView).CurrentCell.Value = dato;
+                            bloqNuevo = Bloque.creaBloque(ent.listAtr, (base.controlPrincipal as DataGridView).Rows[(base.controlPrincipal as DataGridView).CurrentCell.RowIndex]);
+                            this.f.org.modificaBloque(ent,bloqViejo,bloqNuevo);
+                        }
+                        else
+                        {
+                            MessageBox.Show("Dato invalido");
+                        }
+                    }
+                }
+            }
+            else
+            {
+                MessageBox.Show("Este atributo no se puede modificar");
+            }
+        }
+
+        private void EventHAndler_eliminaRegistro(object o, EventArgs e)
+        {
+            bool band = false;
+            Entidad ent;
+
+            (base.controlPrincipal as DataGridView).Rows[(base.controlPrincipal as DataGridView).SelectedCells[0].RowIndex].Selected = true;
+            if (this.f.org.usuario.baja)
+            {
+                if (MessageBox.Show("Seguro que quieres eliminar la fila?", "PELIGRO", MessageBoxButtons.YesNo) == DialogResult.Yes)
+                {
+                    ent = this.f.org.buscaEntidad(this.f.entidadSeleccionada());
+                    band = this.eliminaRegistro(ent);
+                    if (band)
+                    {
+                        MessageBox.Show("Registro eliminado");
+                        this.insertaDatosDataGrid(ent);
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error al intentar eliminar registro");
+                    }
+                }
+            }
+        }
+
+        private bool eliminaRegistro(Entidad ent)
+        {
+            bool band = false;
+            byte[] bloq;
+
+            ent.agregaAtributos(this.f.org.listaAtributos(ent.nombre));
+            foreach (DataGridViewRow r in (base.controlPrincipal as DataGridView).SelectedRows)
+            {
+                if (!buscaRelacion(ent,r))
+                {
+                    bloq = Bloque.creaBloque(ent.listAtr, r);
+                    band = this.f.org.eliminaRegistro(ent, bloq);
+
+                }
+            }
+
+            return band;
+        }
+
+        private bool buscaRelacion(Entidad ent,DataGridViewRow r)
+        {
+            Atributo atr;
+            bool band = false;
+            string datoComp;
+
+            atr = ent.listAtr.Find(a => a.llave.Equals(Atributo.KP));
+            if (atr != null)
+            {
+                datoComp = (base.controlPrincipal as DataGridView)[atr.nombre, r.Index].Value.ToString();
+                band = this.buscaRelacion(atr,datoComp);
+            }
+
+            return band;
+        }
+
+        private bool buscaRelacion(Atributo atr,string datoComp)
+        {
+            Entidad entAux;
+            bool band = false;
+
+            foreach (Relacion rel in atr.listRel)
+            {
+                entAux = this.f.org.buscaEntidad(rel.nomEnt);
+                entAux.agregaAtributos(this.f.org.listaAtributos(entAux.nombre, Archivo.path + '\\' + this.f.org.tipo + '\\' + rel.bd));
+                if (this.f.org.buscaBloque(entAux, entAux.listAtr, atr.nombre, datoComp) != null)
+                {
+                    band = true;
+                    break;
+                }
+            }
+            
+            return band;
+        }
+
+        private void DgvDatos_CellMouseClick(object sender, DataGridViewCellMouseEventArgs e)
+        {
+            if (e.Button.Equals(MouseButtons.Right))
+            {
+                (base.controlPrincipal as DataGridView)[e.ColumnIndex, e.RowIndex].Selected = true;
+                this.cmsMenu.Show(Cursor.Position);
+            }
+            
         }
 
         private void DgvDatos_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
@@ -78,9 +226,6 @@ namespace BaseDeDatos
         private bool validaNuevoRegistro(string nomAtr, DataGridViewCellValidatingEventArgs e)
         {
             bool band = true;
-            int entero;
-            float flotante;
-            char car;
             Atributo atr;
             Entidad ent = this.f.org.buscaEntidad(this.f.entidadSeleccionada());
 
@@ -98,25 +243,7 @@ namespace BaseDeDatos
                 }
                 if (band && !e.FormattedValue.Equals(""))
                 {
-                    switch (atr.tipo)
-                    {
-                        case Atributo.entero:
-                            band = int.TryParse(e.FormattedValue.ToString(), out entero);
-                            break;
-                        case Atributo.flotante:
-                            band = float.TryParse(e.FormattedValue.ToString(), out flotante);
-                            break;
-                        case Atributo.caracter:
-                            band = char.TryParse(e.FormattedValue.ToString(), out car);
-                            if (band)
-                            {
-                                car = car.ToString().ToUpper()[0];
-                            }
-                            break;
-                        default:
-                            band = true;
-                            break;
-                    }
+                    this.validaDato(atr,e.FormattedValue.ToString());
                     if (!band)
                     {
                         (base.controlPrincipal as DataGridView).Rows[e.RowIndex].ErrorText = "El dato debe ser: " + atr.tipo;
@@ -158,6 +285,36 @@ namespace BaseDeDatos
                     }
                 }
                 
+            }
+
+            return band;
+        }
+
+        private bool validaDato(Atributo atr,string dato)
+        {
+            bool band = true;
+            int entero;
+            float flotante;
+            char car;
+
+            switch (atr.tipo)
+            {
+                case Atributo.entero:
+                    band = int.TryParse(dato, out entero);
+                    break;
+                case Atributo.flotante:
+                    band = float.TryParse(dato, out flotante);
+                    break;
+                case Atributo.caracter:
+                    band = char.TryParse(dato, out car);
+                    if (band)
+                    {
+                        car = car.ToString().ToUpper()[0];
+                    }
+                    break;
+                default:
+                    band = true;
+                    break;
             }
 
             return band;

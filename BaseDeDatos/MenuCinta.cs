@@ -47,9 +47,9 @@ namespace BaseDeDatos
             // Create a MenuStrip control with a Mantenimiento subItems.
             #region
             subItems = new ToolStripMenuItem[]{ new ToolStripMenuItem("Alta de Datos", null, altaDatos_Click) ,
-                                                                     new ToolStripMenuItem("Consultar", null, crearEstructura_Click),
+                                                                     new ToolStripMenuItem("Consultar", null, consultar_Click)/*,
                                                                      new ToolStripMenuItem("Eliminar", null, crearEstructura_Click),
-                                                                     new ToolStripMenuItem("Modificar",null,crearEstructura_Click),
+                                                                     new ToolStripMenuItem("Modificar",null,crearEstructura_Click),*/
                                                                     };
             ToolStripMenuItem mantenimientoMenu = new ToolStripMenuItem("Mantenimiento",null,subItems);
             #endregion
@@ -84,6 +84,14 @@ namespace BaseDeDatos
         void crearEstructura_Click(object sender, EventArgs e)
         {
             this.ventanaPrinc.creaEstructura();
+        }
+
+        void consultar_Click(object sender, EventArgs e)
+        {
+            using (DConsulta d = new DConsulta(this.ventanaPrinc))
+            {
+                d.ShowDialog();
+            }
         }
 
         void cambiaUsr_Click(object sender, EventArgs e)
@@ -132,10 +140,7 @@ namespace BaseDeDatos
             }
         }
 
-        void consultaEstructura_Click(object sender,EventArgs e)
-        {
-
-        }
+        
 
         /// <summary>
         /// Agrega datos desde el menu cinta

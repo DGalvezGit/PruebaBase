@@ -917,6 +917,46 @@ namespace BaseDeDatos
         }
 
 
+        public override bool eliminaRegistro(Entidad ent, byte[] bloq)
+        {
+            bool band = false;
+            byte[] bloqAnt=null;
+            List<byte[]> listBloq= this.listaBloques(ent);
+            long pos = -1;
+
+            for(int i=0;i<listBloq.Count && !band;i++)
+            {
+                band = Bloque.comparaBloque(listBloq[i], bloq,ent.listAtr);
+                if (band)
+                {
+                    if (i == 0)
+                    {
+                        (ent as EntSecuencial).apBloq = Bloque.leeApBloq(listBloq[i]);
+                        this.reescribeEntidad(ent, this.buscaPosEntidad(ent.nombre));
+                    }
+                    else
+                    {
+                        Bloque.reescribeApSigBloq(Bloque.leeApBloq(listBloq[i]), bloqAnt);
+                        Archivo.reescribeBloque(base.ruta,bloqAnt, pos);
+                        band = true;
+                    }
+                }
+                if (i == 0)
+                {
+                    pos = (ent as EntSecuencial).apBloq;
+                }
+                else
+                {
+                    pos = Bloque.leeApBloq(bloqAnt);
+                }
+                bloqAnt = listBloq[i];
+            }
+
+
+            return band;
+
+        }
+
         #endregion
     }
 

@@ -220,11 +220,11 @@ namespace BaseDeDatos
             return apSigBloq;
         }
 
-        public static byte[] reescribeApSigBloq(long pos, byte[] bloque)
+        public static byte[] reescribeApSigBloq(long nuevaPos, byte[] bloque)
         {
             int posicion = 0;
 
-            byte[] apBloq = BitConverter.GetBytes(pos);
+            byte[] apBloq = BitConverter.GetBytes(nuevaPos);
             agregaDatoBloque(apBloq, sizeof(long), bloque, ref posicion);
 
             return bloque;
@@ -284,5 +284,46 @@ namespace BaseDeDatos
             return band;
         }
 
+        public static bool comparaBloque(byte[] b, byte[] bloq, List<Atributo> listAtr)
+        {
+            bool band = true;
+
+            int tam = 0;
+            int pos = sizeof(long);
+
+            for (int i = 0; i < listAtr.Count && band; i++)
+            {
+                switch (listAtr[i].tipo)
+                {
+                    case Atributo.entero:
+                        if(convierteEntero(b, pos, ref tam) != convierteEntero(bloq, pos, ref tam))
+                        {
+                            band = false;
+                        }
+                        break;
+                    case Atributo.flotante:
+                        if(convierteFlotante(b, pos, ref tam) != convierteFlotante(bloq, pos, ref tam))
+                        {
+                            band = false;
+                        }
+                        break;
+                    case Atributo.caracter:
+                        if(convierteChar(b, pos, ref tam) != convierteChar(bloq, pos, ref tam))
+                        {
+                            band = false;
+                        }
+                        break;
+                    case Atributo.cadena:
+                        if(convierteCadena(b, pos, ref tam)!= convierteCadena(bloq, pos, ref tam))
+                        {
+                            band = false;
+                        }
+                        break;
+                }
+                pos += tam;
+            }
+
+            return band;
+        }
     }
 }

@@ -475,6 +475,23 @@ namespace BaseDeDatos
             return null;
         }
 
+        public virtual bool eliminaRegistro(Entidad ent, byte[] b)
+        {
+            return false;
+        }
+
+        public bool modificaBloque(Entidad ent, byte[] bloqViejo,byte[] bloqNuevo)
+        {
+            bool band = false;
+
+            if (this.eliminaRegistro(ent, bloqViejo))
+            {
+                band = this.altaBloque(ent, bloqNuevo);
+            }
+
+            return band;
+        }
+
 
         #endregion
     }
